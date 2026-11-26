@@ -23,7 +23,7 @@ class FPLClient:
         self.base_url = base_url or settings.fpl_base_url
         self._semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def _get(self, client: httpx.AsyncClient, path: str) -> dict:
+    async def _get(self, client: httpx.AsyncClient, path: str) -> dict | list:
         async with self._semaphore:
             resp = await client.get(f"{self.base_url}{path}")
             resp.raise_for_status()
@@ -63,3 +63,11 @@ class FPLClient:
     async def get_manager_picks(self, manager_id: int, gameweek: int) -> dict:
         async with httpx.AsyncClient(timeout=30) as client:
             return await self._get(client, f"/entry/{manager_id}/event/{gameweek}/picks/")
+
+    async def get_manager_transfers(self, manager_id: int) -> list[dict]:
+        """Full transfer history, newest first. Each row has element_in,
+        element_out, element_in_cost/element_out_cost (price x10) and the
+        `event` (gameweek) the transfer applies to. Used to reconstruct the
+        current squad while the upcoming gameweek's picks endpoint 404s."""
+        async with httpx.AsyncClient(timeout=30) as client:
+            return await self._get(client, f"/entry/{manager_id}/transfers/")

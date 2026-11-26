@@ -37,7 +37,6 @@ class Player(Base):
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
     now_cost: Mapped[float] = mapped_column(Float)  # in millions, e.g. 5.5
     status: Mapped[str] = mapped_column(String(1), default="a")  # a/d/i/s/u (available/doubtful/injured/...)
-
     team: Mapped["Team"] = relationship(back_populates="players")
 
     understat_mapping: Mapped["PlayerMapping | None"] = relationship(
